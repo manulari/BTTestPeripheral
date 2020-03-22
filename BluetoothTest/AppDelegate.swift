@@ -7,15 +7,24 @@
 //
 
 import UIKit
+import os.log
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
+    var logV = [LogLine]()
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        if let sLog = loadLog() {
+            logV = sLog
+            print(logV.count)
+        }
+        
+        
         return true
     }
 
@@ -27,6 +36,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        
+        
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
@@ -39,6 +50,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    }
+    
+    
+    
+    func log(_ s: String) {
+        logV.append(LogLine(line:s))
+        if let vc = window?.rootViewController as? ViewController {
+            vc.log(s)
+        }
+        saveLog()
+    }
+    
+    
+    static func formatD(_ date: Date) -> String {
+        let dF = DateFormatter()
+        dF.dateFormat = "dd HH:mm:ss"
+        return dF.string(from: Date())
+    }
+    
+    private func saveLog() {
+//        let archivedData = try! NSKeyedArchiver.archivedData(withRootObject: logV, requiringSecureCoding: false)
+//        try! archivedData.write(to: LogLine.ArchiveURL)
+        print("d")
+        if let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: logV, requiringSecureCoding: false) {
+            do {
+                try archivedData.write(to: LogLine.ArchiveURL)
+            } catch {
+                os_log("saving failed.1", log: OSLog.default, type: .debug)
+            }
+        } else {
+            os_log("saving failed.2", log: OSLog.default, type: .debug)
+        }
+    }
+    
+    private func loadLog() -> [LogLine]? {
+        //return NSKeyedUnarchiver.unarchiveObject(withFile: LogLine.ArchiveURL.path) as? [LogLine]
+//        let archivedData = try! Data(contentsOf: LogLine.ArchiveURL)
+//        return (try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedData)) as? [LogLine]
+        if let archivedData = try? Data(contentsOf: LogLine.ArchiveURL) {
+            if let rv = (try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedData)) as? [LogLine] {
+                return rv
+            } else {
+                os_log("loading failed.", log: OSLog.default, type: .debug)
+                return nil
+            }
+        } else {
+            os_log("loading failed.", log: OSLog.default, type: .debug)
+            return nil
+        }
+ 
     }
 
 
