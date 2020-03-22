@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         if let sLog = loadLog() {
             logV = sLog
-            print(logV.count)
+//            print(logV.count)
         }
         
         
@@ -72,7 +72,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func saveLog() {
 //        let archivedData = try! NSKeyedArchiver.archivedData(withRootObject: logV, requiringSecureCoding: false)
 //        try! archivedData.write(to: LogLine.ArchiveURL)
-        print("d")
         if let archivedData = try? NSKeyedArchiver.archivedData(withRootObject: logV, requiringSecureCoding: false) {
             do {
                 try archivedData.write(to: LogLine.ArchiveURL)
