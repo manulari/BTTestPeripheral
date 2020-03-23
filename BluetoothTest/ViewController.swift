@@ -14,10 +14,15 @@ class ViewController: UIViewController {
     var appDelegate: AppDelegate {
      return UIApplication.shared.delegate as! AppDelegate
     }
+    var state: State {
+        return appDelegate.state
+    }
     
     //MARK: Outlets
     @IBOutlet weak var textView: UITextView!
     @IBOutlet weak var clock: UILabel!
+    @IBOutlet weak var stepL: UILabel!
+    @IBOutlet weak var stepS: UIStepper!
     var clockTimer: Timer?
     
     
@@ -27,6 +32,8 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
         
         textView.text = (appDelegate.logV.map { ll in ll.line }).joined(separator: "\n") + "\n"
+        stepS.value = Double(state.step)
+        stepL.text = String(state.step)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -45,6 +52,12 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated
     }
 
+
+    @IBAction func changeStep(_ sender: UIStepper) {
+        state.step = Int(sender.value)
+        appDelegate.saveState()
+        stepL.text = String(state.step)
+    }
 
     
     @IBAction func pressLog(_ sender: UIButton) {

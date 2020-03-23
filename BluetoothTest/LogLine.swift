@@ -36,6 +36,4 @@ class LogLine : NSObject, NSCoding {
 }
 
 
-struct PropertyKey {
-    static let line = "line"
-}
+

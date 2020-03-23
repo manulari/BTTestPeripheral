@@ -15,14 +15,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     
     var logV = [LogLine]()
-
+    
+    var state = State(step: 0)
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // load log and state
         if let sLog = loadLog() {
             logV = sLog
-//            print(logV.count)
         }
+        if let sState = loadState() {
+            state = sState
+        }
+        
+        
+        
+        
         
         
         return true
@@ -67,6 +76,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let dF = DateFormatter()
         dF.dateFormat = "dd HH:mm:ss"
         return dF.string(from: Date())
+    }
+    
+    func saveState() {
+        let archivedData = try! NSKeyedArchiver.archivedData(withRootObject: state, requiringSecureCoding: false)
+        try! archivedData.write(to: State.ArchiveURL)
+    }
+    
+    private func loadState() -> State? {
+        if let archivedData = try? Data(contentsOf: State.ArchiveURL) {
+            return (try! NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(archivedData)) as? State
+        }
+        return nil
     }
     
     private func saveLog() {
