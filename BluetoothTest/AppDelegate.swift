@@ -8,6 +8,7 @@
 
 import UIKit
 import os.log
+import CoreBluetooth
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -17,6 +18,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var logV = [LogLine]()
     
     var state = State(step: 0)
+    
+    var myCentralManager : CBCentralManager?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -30,7 +33,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         
-        
+        // bluetooth
+        //myCentralManager =
         
         
         
