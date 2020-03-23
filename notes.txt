@@ -1,3 +1,8 @@
 https://developer.apple.com/library/archive/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/AboutCoreBluetooth/Introduction.html#//apple_ref/doc/uid/TP40013257-CH1-SW1
 https://www.cloudcity.io/blog/2016/09/14/zero-to-ble-on-ios--part-three/
 
+https://github.com/zssz/BerkananSDK
+
+
+https://github.com/covid19risk/covidwatch-ios
+https://www.covid-watch.org/

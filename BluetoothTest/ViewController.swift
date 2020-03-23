@@ -23,6 +23,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var clock: UILabel!
     @IBOutlet weak var stepL: UILabel!
     @IBOutlet weak var stepS: UIStepper!
+    @IBOutlet weak var toggleB: UIButton!
     var clockTimer: Timer?
     
     
@@ -34,6 +35,7 @@ class ViewController: UIViewController {
         textView.text = (appDelegate.logV.map { ll in ll.line }).joined(separator: "\n") + "\n"
         stepS.value = Double(state.step)
         stepL.text = String(state.step)
+        toggleLabel()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -59,6 +61,15 @@ class ViewController: UIViewController {
         stepL.text = String(state.step)
     }
 
+    @IBAction func toggleOn(_ sender: UIButton) {
+        state.isOn = !state.isOn
+        toggleLabel()
+        appDelegate.saveState()
+    }
+    
+    func toggleLabel() {
+        toggleB.setTitle(state.isOn ? "stop" : "start", for: UIControl.State.normal)
+    }
     
     @IBAction func pressLog(_ sender: UIButton) {
         appDelegate.log(AppDelegate.formatD(Date()))
