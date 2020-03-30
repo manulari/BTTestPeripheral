@@ -47,8 +47,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
         }
         
         if(state.isOn) {
+            log("creating CM object")
             centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: "centralManager"])
-            
+            log("created CM object")
         }
         
         
@@ -58,17 +59,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
     
     //MARK: CBCentralManagerDelegate
     
+    let UUIDPeripheral = CBUUID(string: "C019")
+    
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        
+        if ( central.state == CBManagerState.poweredOn ) {
+            central.scanForPeripherals(withServices: [ UUIDPeripheral ], options: nil)
+        }
+        else {
+            log("central manager not powered on")
+        }
     }
     /*
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         <#code#>
     }
     
-    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        <#code#>
-    }
+    
     
     func centralManager(_ central: CBCentralManager, didUpdateANCSAuthorizationFor peripheral: CBPeripheral) {
         <#code#>
@@ -85,11 +91,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
     func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
         <#code#>
     }
+    */
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        <#code#>
+        log("p: " + peripheral.identifier.uuidString  + " r: " + RSSI.stringValue)
     }
-    */
+    
+    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+        log("CM restored")
+    }
+    
 
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -121,9 +132,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
     
     
     func log(_ s: String) {
-        logV.append(LogLine(line:s))
+        let line = AppDelegate.formatD(Date()) + ":" + s
+        logV.append(LogLine(line:line))
         if let vc = window?.rootViewController as? ViewController {
-            vc.log(s)
+            vc.log(line)
         }
         saveLog()
     }

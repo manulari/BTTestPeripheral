@@ -76,7 +76,7 @@ class ViewController: UIViewController {
     }
     
     func log(_ s: String) {
-        textView.text += s + "\n"
+        textView?.text += s + "\n"
     }
     
     @IBAction func pressExit(_ sender: UIButton) {
