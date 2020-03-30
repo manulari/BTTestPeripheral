@@ -45,7 +45,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
         
         if(state.isOn) {
             log("creating PM object")
-            peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+            peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: [CBPeripheralManagerOptionRestoreIdentifierKey : "peripheralManager"])
             log("created PM object")
         }
         
@@ -60,12 +60,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     let UUIDCharacteristic = CBUUID(string: "D61F4F27-3D6B-4B04-9E46-C9D2EA617F62")
     
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
-        if ( peripheral.state == CBManagerState.poweredOn ) {
-            var myService = CBMutableService(type: UUIDPeripheral, primary: true)
-            var myCharacteristic = CBMutableCharacteristic(type: UUIDCharacteristic, properties: CBCharacteristicProperties.read, value: withUnsafeBytes(of: 17) { Data($0) }, permissions: CBAttributePermissions.readable)
+        if ( peripheral.state == CBManagerState.poweredOn && !peripheral.isAdvertising ) {
+            let myService = CBMutableService(type: UUIDPeripheral, primary: true)
+            let myCharacteristic = CBMutableCharacteristic(type: UUIDCharacteristic, properties: [CBCharacteristicProperties.read], value: nil, permissions: [CBAttributePermissions.readable])
             myService.characteristics = [myCharacteristic]
             peripheral.add(myService)
-            peripheral.startAdvertising([CBAdvertisementDataServiceUUIDsKey: myService])
+            peripheral.startAdvertising([CBAdvertisementDataServiceUUIDsKey: [UUIDPeripheral]])
         }
         else {
             log("peripheral manager not powered on")
@@ -74,8 +74,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     
     func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String : Any]) {
         var pS : String = ""
-        dump(dict[CBPeripheralManagerRestoredStateServicesKey], to: &pS)
-        log("CM restored: " + pS)
+        //dump(dict[CBPeripheralManagerRestoredStateServicesKey], to: &pS)
+        log("PM restored: " + pS)
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
@@ -87,7 +87,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelega
     }
     
     func peripheralManagerDidStartAdvertising(_ peripheral : CBPeripheralManager, error: Error?) {
-        log("start Adv" + ((error != nil) ? " error" : ""))
+        var pS : String = ""
+        dump(error, to: &pS)
+        log("start Adv" + ((error != nil) ? (" error:" + pS) : ""))
     }
     
 
