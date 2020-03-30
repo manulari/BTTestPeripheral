@@ -11,7 +11,7 @@ import os.log
 import CoreBluetooth
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, CBPeripheralManagerDelegate {
     
     
 
@@ -21,12 +21,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
     
     var state = State(step: 0, isOn: false)
     
-    var centralManager : CBCentralManager?
+    var peripheralManager : CBPeripheralManager?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
-        var restoringCM = false
         
         // load log and state
         if let sLog = loadLog() {
@@ -39,17 +37,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
         
         // bluetooth
         
-        if let restoredManagers: [String] = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothCentrals] as? [String] {
-            if restoredManagers.contains("centralManager") {
-                restoringCM = true
-                log("called with a to-be-restored centralManager")
+        if let restoredManagers: [String] = launchOptions?[UIApplication.LaunchOptionsKey.bluetoothPeripherals] as? [String] {
+            if restoredManagers.contains("peripheralManager") {
+                log("called with a to-be-restored peripheralManager")
             }
         }
         
         if(state.isOn) {
-            log("creating CM object")
-            centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: "centralManager"])
-            log("created CM object")
+            log("creating PM object")
+            peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+            log("created PM object")
         }
         
         
@@ -57,48 +54,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate, CBCentralManagerDelegate 
     }
     
     
-    //MARK: CBCentralManagerDelegate
+    //MARK: CBPeripheralManagerDelegate
     
     let UUIDPeripheral = CBUUID(string: "C019")
+    let UUIDCharacteristic = CBUUID(string: "D61F4F27-3D6B-4B04-9E46-C9D2EA617F62")
     
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if ( central.state == CBManagerState.poweredOn ) {
-            central.scanForPeripherals(withServices: [ UUIDPeripheral ], options: nil)
+    func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+        if ( peripheral.state == CBManagerState.poweredOn ) {
+            var myService = CBMutableService(type: UUIDPeripheral, primary: true)
+            var myCharacteristic = CBMutableCharacteristic(type: UUIDCharacteristic, properties: CBCharacteristicProperties.read, value: withUnsafeBytes(of: 17) { Data($0) }, permissions: CBAttributePermissions.readable)
+            myService.characteristics = [myCharacteristic]
+            peripheral.add(myService)
+            peripheral.startAdvertising([CBAdvertisementDataServiceUUIDsKey: myService])
         }
         else {
-            log("central manager not powered on")
+            log("peripheral manager not powered on")
         }
     }
-    /*
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        <#code#>
+    
+    func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String : Any]) {
+        var pS : String = ""
+        dump(dict[CBPeripheralManagerRestoredStateServicesKey], to: &pS)
+        log("CM restored: " + pS)
     }
     
-    
-    
-    func centralManager(_ central: CBCentralManager, didUpdateANCSAuthorizationFor peripheral: CBPeripheral) {
-        <#code#>
+    func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
+        if ( error != nil ) {
+            log("error adding service")
+        } else {
+            log("added service")
+        }
     }
     
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        <#code#>
-    }
-    
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        <#code#>
-    }
-    
-    func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
-        <#code#>
-    }
-    */
-    
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        log("p: " + peripheral.identifier.uuidString  + " r: " + RSSI.stringValue)
-    }
-    
-    func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        log("CM restored")
+    func peripheralManagerDidStartAdvertising(_ peripheral : CBPeripheralManager, error: Error?) {
+        log("start Adv" + ((error != nil) ? " error" : ""))
     }
     
 
